@@ -1,7 +1,7 @@
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
 async function callApi(endpoint: string, method: HttpMethod, payload?: any) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ''
   const url = `${baseUrl}${endpoint}`
 
   const options: RequestInit = {

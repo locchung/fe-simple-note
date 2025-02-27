@@ -1,0 +1,39 @@
+/* CustomRichTextEditor.css */
+.rich-text-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+  border-radius: 4px;
+}
+
+.editor-toolbar {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.preview-toggle {
+  padding: 4px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f8f9fa;
+  cursor: pointer;
+}
+
+.preview-toggle:hover {
+  background: #e9ecef;
+}
+
+.editor-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.markdown-preview {
+  height: 100%;
+  padding: 20px;
+  overflow-y: auto;
+  background: #fff;
+}
