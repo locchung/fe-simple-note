@@ -67,59 +67,56 @@ export default function Login() {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
       >
-        <Typography className="text-2xl font-bold mb-6 text-center text-black">Sign In</Typography>
-        <div className="mb-4">
-          <FormControl sx={{ width: '100%', mb: 2 }}>
-            <FormLabel htmlFor="email">
-              Email
-            </FormLabel>
-            <TextField
-              error={emailError}
-              helperText={emailErrorMessage}
-              id="email"
-              type="email"
-              name="email"
-              placeholder="your@email.com"
-              autoComplete="email"
-              autoFocus
-              required
-              fullWidth
-              variant="outlined"
-              color={emailError ? 'error' : 'primary'}
-              sx={{ ariaLabel: 'email' }}
-            />
-          </FormControl>
-        </div>
+        <h2 className="text-2xl font-bold mb-6 text-center text-black">Sign In</h2>
+        <FormControl className="mb-4" sx={{ width: '100%', mb: 2 }}>
+          <FormLabel htmlFor="email" className="block text-sm font-medium text-gray-700">
+            Email
+          </FormLabel>
+          <TextField
+            error={emailError}
+            helperText={emailErrorMessage}
+            id="email"
+            type="email"
+            name="email"
+            placeholder="your@email.com"
+            autoComplete="email"
+            autoFocus
+            required
+            fullWidth
+            variant="outlined"
+            color={emailError ? 'error' : 'primary'}
+            sx={{ ariaLabel: 'email' }}
+          />
+        </FormControl>
 
-        <div className="mb-6">
-          <FormControl sx={{ width: '100%', mb: 2 }}>
-            <FormLabel htmlFor="password">
-              Password
-            </FormLabel>
-            <TextField
-              error={passwordError}
-              helperText={passwordErrorMessage}
-              name="password"
-              placeholder="••••••"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              autoFocus
-              required
-              fullWidth
-              variant="outlined"
-              color={passwordError ? 'error' : 'primary'}
-            />
-          </FormControl>
-        </div>
+        <FormControl className="mb-6" sx={{ width: '100%', mb: 2 }}>
+          <FormLabel htmlFor="password" className="block text-sm font-medium text-gray-700">
+            Password
+          </FormLabel>
+          <TextField
+            error={passwordError}
+            helperText={passwordErrorMessage}
+            name="password"
+            placeholder="••••••"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            autoFocus
+            required
+            fullWidth
+            variant="outlined"
+            color={passwordError ? 'error' : 'primary'}
+          />
+        </FormControl>
 
-        <Button
+        <button
           type="submit"
           onClick={validateInputs}
           className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Login
-        </Button>
+        </button>
+
         <Typography sx={{ textAlign: 'center' }}>
           Don&apos;t have an account?{' '}
           <span
@@ -130,6 +127,7 @@ export default function Login() {
           </span>
         </Typography>
       </form>
+
       <ToastContainer />
     </div>
   );

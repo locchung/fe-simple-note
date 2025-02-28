@@ -1,10 +1,9 @@
 'use client'
-import { signup } from "@/app/actions/auth"
 import { authService } from "@/app/services/apiAuth";
 import { FormControl, FormLabel, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import React, { useActionState, useEffect, useState } from "react"
-import { toast, ToastContainer } from 'react-toastify';
+import React, {  useState } from "react"
+import { ToastContainer } from 'react-toastify';
 
 export default function Signup() {
   const [emailError, setEmailError] = useState(false);
