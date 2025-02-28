@@ -13,7 +13,6 @@ import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@mui/material'
 import { LOCAL_STORAGE_KEY } from '../constants/localStorage'
-import { getUserAuth } from '../utils/common'
 
 export default function NotePage() {
   const { theme, toggleTheme } = useTheme()
@@ -26,7 +25,6 @@ export default function NotePage() {
   const [searchLoading, setSearchLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
   const { logout } = useAuth()
-  const accessToken = getUserAuth()?.accessToken
 
   const { register, handleSubmit, setValue, getValues, reset, formState: { errors } } = useForm<INoteForm>({
     defaultValues: {
@@ -38,7 +36,7 @@ export default function NotePage() {
   // Fetch all notes
   const fetchNotes = async () => {
     try {
-      const response = await callApi('/notes', 'GET', accessToken)
+      const response = await callApi('/notes', 'GET')
       setNotes(response.data)
     } catch (error) {
       toast.error('Failed to fetch notes')
@@ -46,8 +44,8 @@ export default function NotePage() {
   }
 
   useEffect(() => {
-    if (accessToken) fetchNotes()
-  }, [accessToken])
+    fetchNotes()
+  }, [])
 
   // Handle note selection
   const handleNoteSelect = (note: INote) => {
@@ -67,7 +65,7 @@ export default function NotePage() {
 
     try {
       setSearchLoading(true)
-      const response = await callApi(`/notes/search?querySearch=${encodeURIComponent(query)}`, 'GET', accessToken)
+      const response = await callApi(`/notes/search?querySearch=${encodeURIComponent(query)}`, 'GET')
       setNotes(response.data)
     } catch (error) {
       toast.error('Search failed')
@@ -100,7 +98,7 @@ export default function NotePage() {
 
     try {
       setDeleteLoading(noteId)
-      const resp = await callApi(`/notes/${noteId}`, 'DELETE', accessToken)
+      const resp = await callApi(`/notes/${noteId}`, 'DELETE')
 
       // If deleted note was selected, reset form
       if (selectedNote?._id === noteId) {
@@ -159,7 +157,7 @@ export default function NotePage() {
 
     try {
       setSaveStatus('saving')
-      await callApi('/notes', 'POST', accessToken, data)
+      await callApi('/notes', 'POST', data)
       setSaveStatus('saved')
       toast.success('Note synced with server')
     } catch (error) {
@@ -185,7 +183,7 @@ export default function NotePage() {
             : '/notes'
           const method = selectedNote ? 'PATCH' : 'POST'
 
-          const response = await callApi(endpoint, method, accessToken, data)
+          const response = await callApi(endpoint, method, data)
 
           if (response.error) {
             toast.error(response.message)

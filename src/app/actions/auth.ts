@@ -20,7 +20,7 @@ export async function signup(state: FormState, formData: FormData) {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   }
-  const result = await callApi('/auth/signup', 'POST', '', userData)
+  const result = await callApi('/auth/signup', 'POST', userData)
 
   return {
     message: result.message,

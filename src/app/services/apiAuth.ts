@@ -8,7 +8,7 @@ const STATUS_CODE_SUCCESS = 204;
 const authService = {
   signIn: async (payload: ILogin) => {
     try {
-      const res = await callApi('/auth/signin', 'POST', '', payload)
+      const res = await callApi('/auth/signin', 'POST', payload)
 
       if (res.error) {
         toast.error(res.message);
@@ -38,7 +38,7 @@ const authService = {
   },
   signUp: async (payload: any) => {
     try {
-      const res = await callApi('/auth/signup', 'POST', '', payload);
+      const res = await callApi('/auth/signup', 'POST', payload);
 
       if (res.error) {
         toast.error(res.message);

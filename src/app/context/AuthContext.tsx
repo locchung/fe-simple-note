@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       accessToken: localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN) as string,
       refreshToken: localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN) as string
     })
-  }, [tokens.accessToken])
+  }, [])
 
   const setToken = (accessToken: string, refreshToken: string) => {
     // Set cookies

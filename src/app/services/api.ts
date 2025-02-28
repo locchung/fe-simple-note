@@ -1,3 +1,5 @@
+import { getUserAuth } from "../utils/common"
+
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
 async function refreshAccessToken(refreshToken: string) {
@@ -18,7 +20,7 @@ async function refreshAccessToken(refreshToken: string) {
   }
 }
 
-export async function callApi(endpoint: string, method: HttpMethod, accessToken?: string, payload?: any) {
+export async function callApi(endpoint: string, method: HttpMethod, payload?: any) {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ''
   const url = `${baseUrl}${endpoint}`
 
@@ -27,8 +29,9 @@ export async function callApi(endpoint: string, method: HttpMethod, accessToken?
     'Authorization': ''
   }
 
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`
+  let auth = getUserAuth()
+  if (auth?.accessToken) {
+    headers['Authorization'] = `Bearer ${auth?.accessToken}`
   }
 
   const options: RequestInit = {
