@@ -247,7 +247,11 @@ export default function NotePage() {
     <div className={`flex h-screen ${theme === 'dark' ? 'dark' : ''}`}>
       <div className="w-72 bg-white dark:bg-gray-800 flex flex-col">
         <div className="p-4 flex flex-col h-full">
-          <div className="space-y-2 items-center justify-between gap-2 mb-4">
+          <div className="space-y-2 items-center justify-between gap-2">
+            <SearchComponent
+              onSearch={handleSearch}
+              loading={searchLoading}
+            />
             <button
               onClick={toggleTheme}
               className="fixed bottom-4 left-4 z-50 p-3 rounded-full shadow-lg
@@ -261,12 +265,8 @@ export default function NotePage() {
                 <FiSun className="w-5 h-5 text-gray-300 dark:text-gray-400" />
               )}
             </button>
-            <SearchComponent
-              onSearch={handleSearch}
-              loading={searchLoading}
-            />
           </div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between">
             <button
               className="p-2 hover:bg-gray-200 rounded ml-auto"
               onClick={handleNewNote}
@@ -337,28 +337,23 @@ export default function NotePage() {
               value={content}
               setValue={handleContentChange}
               placeholder="Write your note here..."
-              className="h-[calc(100vh-160px)]"
+              className="h-[calc(100vh-180px)]"
             />
           </div>
         </div>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<FiLogOut />}
+          onClick={handleLogout}
+          sx={{
+            marginBottom: '10px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)', // Optional: add subtle shadow
+          }}
+        >
+          Logout
+        </Button>
       </div>
-
-      <Button
-        variant="outlined"
-        color="primary"
-        startIcon={<FiLogOut />}
-        onClick={handleLogout}
-        sx={{
-          position: 'fixed', // Change to fixed to stay in viewport
-          bottom: 24, // Position from bottom
-          right: 24, // Position from right
-          zIndex: 50, // Ensure button stays above other content
-          borderRadius: '24px', // Optional: make it more rounded
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)', // Optional: add subtle shadow
-        }}
-      >
-        Logout
-      </Button>
 
       <ToastContainer />
     </div>
