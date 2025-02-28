@@ -2,7 +2,7 @@
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { Button, FormControl, FormLabel, TextField, Typography } from '@mui/material';
 import { authService } from "@/app/services/apiAuth";
 
@@ -11,6 +11,7 @@ export default function Login() {
   const [emailErrorMessage, setEmailErrorMessage] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const { setUser, setToken } = useAuth()
   const router = useRouter()
@@ -18,20 +19,31 @@ export default function Login() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (emailError || passwordError) {
-      event.preventDefault();
       return;
     }
 
-    const data = new FormData(event.currentTarget);
-    const res = await authService.signIn({
-      email: data.get('email') as string,
-      password: data.get('password') as string,
-    });
+    try {
+      setIsLoading(true);
+      const data = new FormData(event.currentTarget);
+      const res = await authService.signIn({
+        email: data.get('email') as string,
+        password: data.get('password') as string,
+      });
 
-    if (res?.accessToken && res?.refreshToken) {
-      setUser(res);
-      setToken(res.accessToken, res.refreshToken);
-      router.push('/note');
+      if (res?.accessToken && res?.refreshToken) {
+        // First set the tokens
+        setToken(res.accessToken, res.refreshToken);
+        // Then set user data
+        await setUser(res);
+        // Wait a moment for state to update
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Finally redirect
+        router.push('/note');
+      }
+    } catch (error) {
+      toast.error('Login failed');
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -114,7 +126,7 @@ export default function Login() {
           onClick={validateInputs}
           className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Login
+          {isLoading ? "Logging in..." : "Login"}
         </button>
 
         <Typography sx={{ textAlign: 'center' }}>

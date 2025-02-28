@@ -27,9 +27,8 @@ export interface ILogin {
 }
 
 export interface IAuth {
-  token: string;
+  accessToken: string;
   refreshToken: string;
-  expires: number;
 }
 
 export interface IRefreshTokenResponse {

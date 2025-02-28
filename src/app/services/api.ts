@@ -31,8 +31,6 @@ export async function callApi(endpoint: string, method: HttpMethod, accessToken?
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  console.log('API call', url, accessToken)
-
   const options: RequestInit = {
     method,
     headers

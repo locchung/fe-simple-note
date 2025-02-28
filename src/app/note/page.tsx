@@ -1,11 +1,10 @@
 'use client'
 import React, { useState, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { debounce } from 'lodash'
+import { debounce, get } from 'lodash'
 import { callApi } from '../services/api'
 import { toast, ToastContainer } from 'react-toastify'
 import { INote, INoteForm } from '../interfaces/types'
-import { STORAGE_KEY } from '../ui/constants/localStorage'
 import { saveToLocalStorage } from '../helpers/utils'
 import SearchComponent from '../ui/components/search/Search'
 import { FiEdit, FiLogOut, FiMoon, FiSun, FiTrash2 } from 'react-icons/fi'
@@ -13,6 +12,8 @@ import CustomRichTextEditor from '../ui/components/forms/rich-text-editor/Custom
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@mui/material'
+import { LOCAL_STORAGE_KEY } from '../constants/localStorage'
+import { getUserAuth } from '../utils/common'
 
 export default function NotePage() {
   const { theme, toggleTheme } = useTheme()
@@ -24,7 +25,8 @@ export default function NotePage() {
   const [isModified, setIsModified] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
-  const { accessToken, logout } = useAuth()
+  const { logout } = useAuth()
+  const accessToken = getUserAuth()?.accessToken
 
   const { register, handleSubmit, setValue, getValues, reset, formState: { errors } } = useForm<INoteForm>({
     defaultValues: {
@@ -85,9 +87,9 @@ export default function NotePage() {
     })
 
     // Clear localStorage
-    localStorage.removeItem(STORAGE_KEY.TITLE)
-    localStorage.removeItem(STORAGE_KEY.CONTENT)
-    localStorage.removeItem(STORAGE_KEY.LAST_SAVED)
+    localStorage.removeItem(LOCAL_STORAGE_KEY.TITLE)
+    localStorage.removeItem(LOCAL_STORAGE_KEY.CONTENT)
+    localStorage.removeItem(LOCAL_STORAGE_KEY.LAST_SAVED)
   }
 
   const handleDeleteNote = async (noteId: string, e: React.MouseEvent) => {
@@ -119,8 +121,8 @@ export default function NotePage() {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const storedTitle = localStorage.getItem(STORAGE_KEY.TITLE)
-    const storedContent = localStorage.getItem(STORAGE_KEY.CONTENT)
+    const storedTitle = localStorage.getItem(LOCAL_STORAGE_KEY.TITLE)
+    const storedContent = localStorage.getItem(LOCAL_STORAGE_KEY.CONTENT)
 
     if (storedTitle) setValue('title', storedTitle)
     if (storedContent) {
@@ -184,6 +186,12 @@ export default function NotePage() {
           const method = selectedNote ? 'PATCH' : 'POST'
 
           const response = await callApi(endpoint, method, accessToken, data)
+
+          if (response.error) {
+            toast.error(response.message)
+            return
+          }
+
           if (!selectedNote && response.data) {
             setSelectedNote(response.data)
           }

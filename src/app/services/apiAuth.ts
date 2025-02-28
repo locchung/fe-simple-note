@@ -21,6 +21,9 @@ const authService = {
       };
 
       localStorage.setItem(LOCAL_STORAGE_KEY.USER, JSON.stringify(setValue));
+      // Set localStorage
+      localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, res?.data?.accessToken)
+      localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, res?.data?.refreshToken)
       return res.data;
     } catch (error: any) {
       console.log(error)

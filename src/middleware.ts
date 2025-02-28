@@ -1,6 +1,7 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { LOCAL_STORAGE_KEY } from './app/constants/localStorage'
 
 // Define public routes that don't need authentication
 const publicRoutes = ['/auth/login', '/auth/signup']
@@ -14,7 +15,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for auth token
-  const token = request.cookies.get('accessToken')
+  const token = request.cookies.get(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 
   // If no tokens, redirect to login
   if (!token) {
