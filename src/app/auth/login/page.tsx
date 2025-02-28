@@ -1,80 +1,135 @@
 'use client'
-
-import { signin } from "@/app/actions/auth";
-import { useActionState, useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { ToastContainer } from "react-toastify";
+import { Button, FormControl, FormLabel, TextField, Typography } from '@mui/material';
+import { authService } from "@/app/services/apiAuth";
 
 export default function Login() {
-  const [state, action, pending] = useActionState(signin, undefined)
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  })
+  const { setUser, setToken } = useAuth()
+  const router = useRouter()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (emailError || passwordError) {
+      event.preventDefault();
+      return;
+    }
+
+    const data = new FormData(event.currentTarget);
+    const res = await authService.signIn({
+      email: data.get('email') as string,
+      password: data.get('password') as string,
+    });
+
+    if (res?.accessToken && res?.refreshToken) {
+      setUser(res);
+      setToken(res.accessToken, res.refreshToken);
+      router.push('/note');
+    }
   }
+
+  const validateInputs = () => {
+    const email = document.getElementById('email') as HTMLInputElement;
+    const password = document.getElementById('password') as HTMLInputElement;
+    let isValid = true;
+
+    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+      setEmailError(true);
+      setEmailErrorMessage('Please enter a valid email address.');
+      isValid = false;
+    } else {
+      setEmailError(false);
+      setEmailErrorMessage('');
+    }
+
+    if (!password.value || password.value.length < 6) {
+      setPasswordError(true);
+      setPasswordErrorMessage('Password must be at least 6 characters long.');
+      isValid = false;
+    } else {
+      setPasswordError(false);
+      setPasswordErrorMessage('');
+    }
+
+    return isValid;
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <form
-        // onSubmit={handleSubmit}
-        action={action}
+        onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
       >
-        <h2 className="text-2xl font-bold mb-6 text-center text-black">Sign In</h2>
+        <Typography className="text-2xl font-bold mb-6 text-center text-black">Sign In</Typography>
         <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-            placeholder="Email"
-          />
-          {state?.errors?.email && <p className="text-red-500 text-sm">{state.errors.email}</p>}
+          <FormControl sx={{ width: '100%', mb: 2 }}>
+            <FormLabel htmlFor="email">
+              Email
+            </FormLabel>
+            <TextField
+              error={emailError}
+              helperText={emailErrorMessage}
+              id="email"
+              type="email"
+              name="email"
+              placeholder="your@email.com"
+              autoComplete="email"
+              autoFocus
+              required
+              fullWidth
+              variant="outlined"
+              color={emailError ? 'error' : 'primary'}
+              sx={{ ariaLabel: 'email' }}
+            />
+          </FormControl>
         </div>
 
         <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-            placeholder="Password"
-          />
-          {state?.errors?.password && (
-            <div className="text-red-500 text-sm">
-              <p>Password must:</p>
-              <ul>
-                {state.errors.password.map((error) => (
-                  <li key={error}>- {error}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <FormControl sx={{ width: '100%', mb: 2 }}>
+            <FormLabel htmlFor="password">
+              Password
+            </FormLabel>
+            <TextField
+              error={passwordError}
+              helperText={passwordErrorMessage}
+              name="password"
+              placeholder="••••••"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              autoFocus
+              required
+              fullWidth
+              variant="outlined"
+              color={passwordError ? 'error' : 'primary'}
+            />
+          </FormControl>
         </div>
 
-        <button
+        <Button
           type="submit"
-          disabled={pending}
+          onClick={validateInputs}
           className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Login
-        </button>
+        </Button>
+        <Typography sx={{ textAlign: 'center' }}>
+          Don&apos;t have an account?{' '}
+          <span
+            onClick={() => router.push('/auth/signup')}
+            className="cursor-pointer underline underline-offset-1 hover:text-c2-400"
+          >
+            Sign up
+          </span>
+        </Typography>
       </form>
-
       <ToastContainer />
     </div>
   );

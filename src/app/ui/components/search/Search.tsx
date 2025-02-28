@@ -31,7 +31,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ onSearch, loading }) 
           value={query}
           onChange={handleChange}
           placeholder="Search notes..."
-          className="border p-2 rounded w-full text-black pr-8"
+          className="border p-2 rounded w-full pr-8"
         />
         {loading && (
           <div className="absolute right-3">

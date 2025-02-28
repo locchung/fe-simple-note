@@ -2,16 +2,20 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { debounce } from 'lodash'
-import callApi from '../services/api'
+import { callApi } from '../services/api'
 import { toast, ToastContainer } from 'react-toastify'
 import { INote, INoteForm } from '../interfaces/types'
 import { STORAGE_KEY } from '../ui/constants/localStorage'
 import { saveToLocalStorage } from '../helpers/utils'
 import SearchComponent from '../ui/components/search/Search'
-import { FiEdit } from 'react-icons/fi'
+import { FiEdit, FiLogOut, FiMoon, FiSun, FiTrash2 } from 'react-icons/fi'
 import CustomRichTextEditor from '../ui/components/forms/rich-text-editor/CustomRichTextEditor'
+import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
+import { Button } from '@mui/material'
 
 export default function NotePage() {
+  const { theme, toggleTheme } = useTheme()
   const [content, setContent] = useState<string>('')
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [isOnline, setIsOnline] = useState(true)
@@ -19,6 +23,8 @@ export default function NotePage() {
   const [selectedNote, setSelectedNote] = useState<INote | null>(null)
   const [isModified, setIsModified] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
+  const { accessToken, logout } = useAuth()
 
   const { register, handleSubmit, setValue, getValues, reset, formState: { errors } } = useForm<INoteForm>({
     defaultValues: {
@@ -30,7 +36,7 @@ export default function NotePage() {
   // Fetch all notes
   const fetchNotes = async () => {
     try {
-      const response = await callApi('/notes', 'GET')
+      const response = await callApi('/notes', 'GET', accessToken)
       setNotes(response.data)
     } catch (error) {
       toast.error('Failed to fetch notes')
@@ -38,8 +44,8 @@ export default function NotePage() {
   }
 
   useEffect(() => {
-    fetchNotes()
-  }, [])
+    if (accessToken) fetchNotes()
+  }, [accessToken])
 
   // Handle note selection
   const handleNoteSelect = (note: INote) => {
@@ -59,7 +65,7 @@ export default function NotePage() {
 
     try {
       setSearchLoading(true)
-      const response = await callApi(`/notes/search?query=${encodeURIComponent(query)}`, 'GET')
+      const response = await callApi(`/notes/search?querySearch=${encodeURIComponent(query)}`, 'GET', accessToken)
       setNotes(response.data)
     } catch (error) {
       toast.error('Search failed')
@@ -82,6 +88,33 @@ export default function NotePage() {
     localStorage.removeItem(STORAGE_KEY.TITLE)
     localStorage.removeItem(STORAGE_KEY.CONTENT)
     localStorage.removeItem(STORAGE_KEY.LAST_SAVED)
+  }
+
+  const handleDeleteNote = async (noteId: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent note selection when clicking delete
+
+    if (deleteLoading) return // Prevent multiple deletes
+    if (!confirm('Are you sure you want to delete this note?')) return
+
+    try {
+      setDeleteLoading(noteId)
+      const resp = await callApi(`/notes/${noteId}`, 'DELETE', accessToken)
+
+      // If deleted note was selected, reset form
+      if (selectedNote?._id === noteId) {
+        handleNewNote()
+      }
+      if (resp.statusCode === 200)
+        toast.success('Note deleted successfully')
+      else {
+        toast.error('Failed to delete note')
+      }
+      fetchNotes() // Refresh notes list
+    } catch (error) {
+      toast.error('Failed to delete note')
+    } finally {
+      setDeleteLoading(null)
+    }
   }
 
   // Load from localStorage on mount
@@ -124,7 +157,7 @@ export default function NotePage() {
 
     try {
       setSaveStatus('saving')
-      await callApi('/notes', 'POST', data)
+      await callApi('/notes', 'POST', accessToken, data)
       setSaveStatus('saved')
       toast.success('Note synced with server')
     } catch (error) {
@@ -150,7 +183,7 @@ export default function NotePage() {
             : '/notes'
           const method = selectedNote ? 'PATCH' : 'POST'
 
-          const response = await callApi(endpoint, method, data)
+          const response = await callApi(endpoint, method, accessToken, data)
           if (!selectedNote && response.data) {
             setSelectedNote(response.data)
           }
@@ -194,11 +227,28 @@ export default function NotePage() {
     }
   }
 
+  const handleLogout = () => {
+    logout()
+  }
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      <div className="w-72 bg-white flex flex-col">
+    <div className={`flex h-screen ${theme === 'dark' ? 'dark' : ''}`}>
+      <div className="w-72 bg-white dark:bg-gray-800 flex flex-col">
         <div className="p-4 flex flex-col h-full">
           <div className="space-y-2 items-center justify-between gap-2 mb-4">
+            <button
+              onClick={toggleTheme}
+              className="fixed bottom-4 left-4 z-50 p-3 rounded-full shadow-lg
+                bg-white dark:bg-gray-800 hover:scale-110 transform transition-all duration-200
+                border border-gray-200 dark:border-gray-700"
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? (
+                <FiMoon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              ) : (
+                <FiSun className="w-5 h-5 text-gray-300 dark:text-gray-400" />
+              )}
+            </button>
             <SearchComponent
               onSearch={handleSearch}
               loading={searchLoading}
@@ -209,7 +259,7 @@ export default function NotePage() {
               className="p-2 hover:bg-gray-200 rounded ml-auto"
               onClick={handleNewNote}
             >
-              <FiEdit className='text-black' />
+              <FiEdit />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -220,15 +270,33 @@ export default function NotePage() {
                 notes.map((note) => (
                   <li
                     key={note._id}
-                    className={`p-3 bg-white cursor-pointer hover:bg-gray-50 ${
-                      selectedNote?._id === note._id ? 'bg-gray-100' : ''
-                    }`}
+                    className={`p-3 bg-white dark:bg-gray-700 cursor-pointer
+                      hover:bg-gray-50 dark:hover:bg-gray-600
+                      ${selectedNote?._id === note._id ? 'bg-gray-100 dark:bg-gray-600' : ''}
+                      transition-colors`}
                     onClick={() => handleNoteSelect(note)}
                   >
-                    <h3 className="font-medium text-black">{note.title}</h3>
-                    <p className="text-sm text-gray-500 truncate">
-                      {note.content.replace(/<[^>]*>/g, '').slice(0, 100)}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-medium">{note.title}</h3>
+                        <p className="text-sm text-gray-500 truncate">
+                          {note.content.replace(/<[^>]*>/g, '').slice(0, 100)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => handleDeleteNote(note._id, e)}
+                        className={`p-2 hover:bg-red-50 rounded text-gray-500 hover:text-red-500 transition-colors ${
+                          deleteLoading === note._id ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        disabled={deleteLoading === note._id}
+                      >
+                        {deleteLoading === note._id ? (
+                          <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full" />
+                        ) : (
+                          <FiTrash2 size={16} />
+                        )}
+                      </button>
+                    </div>
                   </li>
                 ))
               )}
@@ -237,7 +305,7 @@ export default function NotePage() {
         </div>
       </div>
 
-      <div className="flex-1 bg-white flex flex-col h-screen">
+      <div className="flex-1 bg-white dark:bg-gray-800 flex flex-col h-screen">
         <div className="p-4 flex flex-col h-full">
           <div className="flex items-center gap-2 mb-4">
             <input
@@ -245,7 +313,7 @@ export default function NotePage() {
               placeholder="Note Title *"
               {...register('title', { required: 'Title is required' })}
               onChange={handleTitleChange}
-              className="border p-1 text-2xl font-bold w-full focus:outline-none"
+              className="border p-1 text-2xl font-bold w-full focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors"
             />
           </div>
           {errors.title && (
@@ -263,7 +331,24 @@ export default function NotePage() {
         </div>
       </div>
 
-    <ToastContainer />
+      <Button
+        variant="outlined"
+        color="primary"
+        startIcon={<FiLogOut />}
+        onClick={handleLogout}
+        sx={{
+          position: 'fixed', // Change to fixed to stay in viewport
+          bottom: 24, // Position from bottom
+          right: 24, // Position from right
+          zIndex: 50, // Ensure button stays above other content
+          borderRadius: '24px', // Optional: make it more rounded
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)', // Optional: add subtle shadow
+        }}
+      >
+        Logout
+      </Button>
+
+      <ToastContainer />
     </div>
   )
 }

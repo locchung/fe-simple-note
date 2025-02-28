@@ -1,98 +1,151 @@
 'use client'
 import { signup } from "@/app/actions/auth"
+import { authService } from "@/app/services/apiAuth";
+import { FormControl, FormLabel, TextField } from "@mui/material";
+import { useRouter } from "next/navigation";
 import React, { useActionState, useEffect, useState } from "react"
 import { toast, ToastContainer } from 'react-toastify';
 
 export default function Signup() {
-  const [state, action, pending] = useActionState(signup, undefined)
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+  const [userNameError, setUserNameError] = useState(false);
+  const [userNameErrorMessage, setUserNameErrorMessage] = useState('');
+  const router = useRouter()
 
-  const [formData, setFormData] = useState({
-    userName: "",
-    email: "",
-    password: "",
-  })
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (emailError || passwordError || userNameError) {
+      event.preventDefault();
+      return;
+    }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const data = new FormData(event.currentTarget);
+    const res = await authService.signUp({
+      email: data.get('email') as string,
+      password: data.get('password') as string,
+      username: data.get('userName') as string,
+    });
+
+    if (res?.statusCode === 201) {
+      router.push('/auth/login');
+    }
   }
 
-  useEffect(() => {
-    if (state?.code === 201) {
-      toast.success(state.message)
+  const validateInputs = () => {
+    const userName = document.getElementById('userName') as HTMLInputElement;
+    const email = document.getElementById('email') as HTMLInputElement;
+    const password = document.getElementById('password') as HTMLInputElement;
+    let isValid = true;
+
+    if (!userName.value) {
+      setUserNameError(true);
+      setUserNameErrorMessage('Please enter your name.');
+      isValid = false;
     } else {
-      toast.error(state?.message)
+      setUserNameError(false);
+      setUserNameErrorMessage('');
     }
-  }, [state])
+
+    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+      setEmailError(true);
+      setEmailErrorMessage('Please enter a valid email address.');
+      isValid = false;
+    } else {
+      setEmailError(false);
+      setEmailErrorMessage('');
+    }
+
+    if (!password.value
+        || !/[a-zA-Z]/.test(password.value)
+        || !/[0-9]/.test(password.value)
+        || !/[^a-zA-Z0-9]/.test(password.value)
+        || password.value.length < 6) {
+      setPasswordError(true);
+      setPasswordErrorMessage('Password must be at least 6 characters long. \n It must contain at least one letter, one number, and one special character.');
+      isValid = false;
+    } else {
+      setPasswordError(false);
+      setPasswordErrorMessage('');
+    }
+
+    return isValid;
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <form
-        // onSubmit={handleSubmit}
-        action={action}
+        onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
       >
         <h2 className="text-2xl font-bold mb-6 text-center text-black">Sign Up</h2>
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+        <FormControl className="mb-4" sx={{ width: '100%', mb: 2 }}>
+          <FormLabel htmlFor="name" className="block text-sm font-medium text-gray-700">
             Name
-          </label>
-          <input
+          </FormLabel>
+          <TextField
+            error={userNameError}
+            helperText={userNameErrorMessage}
             id="userName"
+            type="userName"
             name="userName"
-            type="text"
-            value={formData.userName}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-            placeholder="Name"
+            placeholder="Nguyen Van A"
+            autoComplete="name"
+            autoFocus
+            required
+            fullWidth
+            variant="outlined"
+            color={userNameError ? 'error' : 'primary'}
+            sx={{ ariaLabel: 'email' }}
           />
-          {state?.errors?.userName && <p className="text-red-500 text-sm">{state.errors.userName}</p>}
-        </div>
+        </FormControl>
 
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+        <FormControl className="mb-4" sx={{ width: '100%', mb: 2 }}>
+          <FormLabel htmlFor="email" className="block text-sm font-medium text-gray-700">
             Email
-          </label>
-          <input
+          </FormLabel>
+          <TextField
+            error={emailError}
+            helperText={emailErrorMessage}
             id="email"
-            name="email"
             type="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-            placeholder="Email"
+            name="email"
+            placeholder="your@email.com"
+            autoComplete="email"
+            autoFocus
+            required
+            fullWidth
+            variant="outlined"
+            color={emailError ? 'error' : 'primary'}
+            sx={{ ariaLabel: 'email' }}
           />
-          {state?.errors?.email && <p className="text-red-500 text-sm">{state.errors.email}</p>}
-        </div>
+        </FormControl>
 
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <FormControl className="mb-6" sx={{ width: '100%', mb: 2 }}>
+          <FormLabel htmlFor="password" className="block text-sm font-medium text-gray-700">
             Password
-          </label>
-          <input
-            id="password"
+          </FormLabel>
+          <TextField
+            error={passwordError}
+            helperText={passwordErrorMessage}
             name="password"
+            placeholder="••••••"
             type="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-            placeholder="Password"
+            id="password"
+            autoComplete="current-password"
+            autoFocus
+            required
+            fullWidth
+            variant="outlined"
+            color={passwordError ? 'error' : 'primary'}
           />
-          {state?.errors?.password && (
-            <div className="text-red-500 text-sm">
-              <p>Password must:</p>
-              <ul>
-                {state.errors.password.map((error) => (
-                  <li key={error}>- {error}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        </FormControl>
 
         <button
           type="submit"
-          disabled={pending}
+          onClick={validateInputs}
           className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Sign Up

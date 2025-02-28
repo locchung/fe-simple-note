@@ -1,14 +1,41 @@
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
-async function callApi(endpoint: string, method: HttpMethod, payload?: any) {
+async function refreshAccessToken(refreshToken: string) {
+  try {
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ refreshToken })
+    })
+
+    if (!response.ok) throw new Error()
+    const data = await response.json()
+    return data.accessToken
+  } catch {
+    return null
+  }
+}
+
+export async function callApi(endpoint: string, method: HttpMethod, accessToken?: string, payload?: any) {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ''
   const url = `${baseUrl}${endpoint}`
 
+  let headers = {
+    'Content-Type': 'application/json',
+    'Authorization': ''
+  }
+
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`
+  }
+
+  console.log('API call', url, accessToken)
+
   const options: RequestInit = {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers
   }
 
   if (payload) {
@@ -17,11 +44,10 @@ async function callApi(endpoint: string, method: HttpMethod, payload?: any) {
 
   try {
     const response = await fetch(url, options)
+
     return await response.json()
   } catch (error) {
-    console.error('API call error:', error)
+    console.error('API error:', error)
     throw error
   }
 }
-
-export default callApi
