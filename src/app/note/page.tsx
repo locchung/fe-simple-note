@@ -38,6 +38,12 @@ export default function NotePage() {
     try {
       const response = await callApi('/notes', 'GET')
       setNotes(response.data)
+
+      // Auto-select first note if no note is selected
+      if (response.data?.length > 0 && !selectedNote) {
+        const firstNote = response.data[0]
+        handleNoteSelect(firstNote)
+      }
     } catch (error) {
       toast.error('Failed to fetch notes')
     }
