@@ -1,7 +1,7 @@
 'use client'
 import { signup } from "@/app/actions/auth"
 import { authService } from "@/app/services/apiAuth";
-import { FormControl, FormLabel, TextField } from "@mui/material";
+import { FormControl, FormLabel, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import React, { useActionState, useEffect, useState } from "react"
 import { toast, ToastContainer } from 'react-toastify';
@@ -150,6 +150,16 @@ export default function Signup() {
         >
           Sign Up
         </button>
+
+      <Typography sx={{ textAlign: 'center' }}>
+        Already have an account?{' '}
+        <span
+          onClick={() => router.push('/auth/login')}
+          className="cursor-pointer underline underline-offset-1 hover:text-c2-400"
+        >
+          Login
+        </span>
+      </Typography>
       </form>
 
       <ToastContainer />
