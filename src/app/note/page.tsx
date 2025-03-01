@@ -300,31 +300,48 @@ export default function NotePage() {
                     onClick={() => handleNoteSelect(note)}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-medium">{note.title}</h3>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium">{note.title.length > 20 ? note.title.slice(0, 20) + '...' : note.title}</h3>
                         <p className="text-sm text-gray-500 truncate">
-                          {note.content.replace(/<[^>]*>/g, '').slice(0, 100)}
+                          {note.content.length > 20 ? note.content.replace(/<[^>]*>/g, '').slice(0, 20) + '...' : note.content.replace(/<[^>]*>/g, '')}
                         </p>
                       </div>
-                      <button
-                        onClick={(e) => handleDeleteNote(note._id, e)}
-                        className={`p-2 hover:bg-red-50 rounded text-gray-500 hover:text-red-500 transition-colors ${
-                          deleteLoading === note._id ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                        disabled={deleteLoading === note._id}
-                      >
-                        {deleteLoading === note._id ? (
-                          <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full" />
-                        ) : (
-                          <FiTrash2 size={16} />
-                        )}
-                      </button>
+                      <div className="flex-shrink-0 w-5">
+                        <button
+                          onClick={(e) => handleDeleteNote(note._id, e)}
+                          className={`p-2 hover:bg-red-50 rounded text-gray-500 hover:text-red-500 transition-colors ${
+                            deleteLoading === note._id ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                          disabled={deleteLoading === note._id}
+                        >
+                          {deleteLoading === note._id ? (
+                            <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full" />
+                          ) : (
+                            <FiTrash2 size={16} />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </li>
                 ))
               )}
             </ul>
           </div>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<FiLogOut />}
+            onClick={handleLogout}
+            sx={{
+              marginBottom: '10px',
+              marginTop: '10px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)', // Optional: add subtle shadow
+              marginLeft: 'auto',
+              width: '100px'
+            }}
+          >
+            Logout
+          </Button>
         </div>
       </div>
 
@@ -357,18 +374,6 @@ export default function NotePage() {
             updateNote={handleContentChange}
           />
         </div>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<FiLogOut />}
-          onClick={handleLogout}
-          sx={{
-            marginBottom: '10px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)', // Optional: add subtle shadow
-          }}
-        >
-          Logout
-        </Button>
       </div>
 
       <ToastContainer />

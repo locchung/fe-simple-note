@@ -24,7 +24,7 @@ export default function MdeEditor({ currentNote, updateNote, className }: any) {
           Promise.resolve(converter.makeHtml(markdown))
         }
         maxEditorHeight={1000}
-        minEditorHeight={643}
+        minEditorHeight={680}
         heightUnits={"px"}
       />
     </div>
