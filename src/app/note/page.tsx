@@ -13,6 +13,9 @@ import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@mui/material'
 import { LOCAL_STORAGE_KEY } from '../constants/localStorage'
+import ReactMde from 'react-mde'
+import Showdown from "showdown";
+import MdeEditor from '../ui/components/forms/mde-editor/MdeEditor'
 
 export default function NotePage() {
   const { theme, toggleTheme } = useTheme()
@@ -24,6 +27,7 @@ export default function NotePage() {
   const [isModified, setIsModified] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
+  const [selectedTab, setSelectedTab] = useState<any>("write");
   const { logout } = useAuth()
 
   const { register, handleSubmit, setValue, getValues, reset, formState: { errors } } = useForm<INoteForm>({
@@ -243,6 +247,13 @@ export default function NotePage() {
     logout()
   }
 
+  const converter = new Showdown.Converter({
+    tables: true,
+    simplifiedAutoLink: true,
+    strikethrough: true,
+    tasklists: true
+  });
+
   return (
     <div className={`flex h-screen ${theme === 'dark' ? 'dark' : ''}`}>
       <div className="w-72 bg-white dark:bg-gray-800 flex flex-col">
@@ -332,14 +343,19 @@ export default function NotePage() {
             <p className="text-red-500 text-sm mb-2">{errors.title.message}</p>
           )}
 
-          <div className="flex-grow overflow-auto">
-            <CustomRichTextEditor
+          {/* <div className="flex-grow overflow-auto"> */}
+            {/* <CustomRichTextEditor
               value={content}
               setValue={handleContentChange}
               placeholder="Write your note here..."
               className="h-[calc(100vh-180px)]"
-            />
-          </div>
+            /> */}
+          {/* </div> */}
+
+          <MdeEditor
+            currentNote={content}
+            updateNote={handleContentChange}
+          />
         </div>
         <Button
           variant="outlined"

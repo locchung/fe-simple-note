@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic';
 import React, { useRef } from 'react';
 import 'react-quill/dist/quill.snow.css';
 import './CustomRichTextEditor.css';
-import ReactMarkdown from "react-markdown";
-import Split from "react-split";
+
 
 const ReactQuill = dynamic(
   async () => {
