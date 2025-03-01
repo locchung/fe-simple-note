@@ -2,6 +2,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./globals.css";
 import "react-mde/lib/styles/css/react-mde-all.css";
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
 
 export const metadata = {
   title: 'Next.js',

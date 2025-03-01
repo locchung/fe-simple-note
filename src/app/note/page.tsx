@@ -13,9 +13,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@mui/material'
 import { LOCAL_STORAGE_KEY } from '../constants/localStorage'
-import ReactMde from 'react-mde'
-import Showdown from "showdown";
-import MdeEditor from '../ui/components/forms/mde-editor/MdeEditor'
+import MDEditor, { selectWord } from "@uiw/react-md-editor";
 
 export default function NotePage() {
   const { theme, toggleTheme } = useTheme()
@@ -230,7 +228,7 @@ export default function NotePage() {
     }
   }
 
-  const handleContentChange = (value: string) => {
+  const handleContentChange = (value: any) => {
     setContent(value)
     setValue('content', value)
     setIsModified(true) // Mark as modified
@@ -246,13 +244,6 @@ export default function NotePage() {
   const handleLogout = () => {
     logout()
   }
-
-  const converter = new Showdown.Converter({
-    tables: true,
-    simplifiedAutoLink: true,
-    strikethrough: true,
-    tasklists: true
-  });
 
   return (
     <div className={`flex h-screen ${theme === 'dark' ? 'dark' : ''}`}>
@@ -369,9 +360,16 @@ export default function NotePage() {
             /> */}
           {/* </div> */}
 
-          <MdeEditor
+          {/* <MdeEditor
             currentNote={content}
             updateNote={handleContentChange}
+          /> */}
+
+          <MDEditor
+            data-color-mode={`${theme === 'dark' ? 'dark' : 'light'}`}
+            height={729}
+            value={content}
+            onChange={handleContentChange}
           />
         </div>
       </div>
