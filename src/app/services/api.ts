@@ -35,6 +35,7 @@ export async function callApi(endpoint: string, method: HttpMethod, payload?: an
   }
 
   const options: RequestInit = {
+    referrerPolicy: "unsafe-url",
     method,
     headers
   }
